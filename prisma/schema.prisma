@@ -1,0 +1,61 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  code      String   @unique
+  name      String
+  email     String   @unique
+  phone     String
+  position  String
+  role      Role
+  password  String
+
+  ordersSold      Order[]   @relation(name: "Seller")
+  ordersDelivered Order[]   @relation(name: "Deliverer")
+}
+
+model Order {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  orderNumber     String      @unique
+  productList     String[]
+  orderDate       DateTime?
+  receptionDate   DateTime?
+  dispatchDate    DateTime?
+  deliveryDate    DateTime?
+  status          OrderStatus
+  seller          User        @relation(name: "Seller", fields: [sellerId], references: [id])
+  sellerId        String
+  deliverer       User?       @relation(name: "Deliverer", fields: [delivererId], references: [id])
+  delivererId     String?
+}
+
+model Product {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  sku         String   @unique
+  name        String
+  type        String
+  tags        String[]
+  price       Float
+  unit        String
+}
+
+enum Role {
+  ENCARGADO
+  VENDEDOR
+  DELIVERY
+  REPARTIDOR
+}
+
+enum OrderStatus {
+  POR_ATENDER
+  EN_PROCESO
+  EN_DELIVERY
+  RECIBIDO
+}
